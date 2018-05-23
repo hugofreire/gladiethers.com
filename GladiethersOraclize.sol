@@ -32,7 +32,7 @@ contract GladiethersOraclize is usingOraclize
         require(msg.value >= getOraclizePrice() ); 
         bytes32 queryId = oraclize_query("WolframAlpha", "random number between 0 and 100",callbackGas);
         queryIdToGladiator[queryId] = msg.sender;
-        m_Gladiethers.remove(msg.sender);
+        m_Gladiethers.removeOrc(msg.sender);
         
     }
     
@@ -53,7 +53,7 @@ contract GladiethersOraclize is usingOraclize
 }
 contract AbstractGladiethers
 {
-    function remove(address gladiator);
+    function removeOrc(address gladiator);
     function fight(address gladiator1,string _result);
 }
 
