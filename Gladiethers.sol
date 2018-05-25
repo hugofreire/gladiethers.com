@@ -23,11 +23,16 @@ contract Gladiethers
     function ChangeAddressTrust(address contract_address,bool trust_flag) public OnlyOwnerAndContracts() {
         trustedContracts[contract_address] = trust_flag;
     }
+    
     function Gladiethers() public{
         m_Owner = msg.sender;
     }
+    
+    function setPartner(address contract_partner) public{
+        partner = contract_partner;
+    }
 
-    function joinArena() public payable{
+    function joinArena() public payable returns (bool){
 
         require( msg.value >= 10 finney );
 
@@ -35,27 +40,25 @@ contract Gladiethers
             gladiatorToPowerBonus[msg.sender] = 5; // 5% increase in the power of your gladiator for eveeer
             founders++;
         }else if(founders < 100 && gladiatorToPowerBonus[msg.sender] == 0){
-            gladiatorToPowerBonus[msg.sender] = 2; // 5% increase in the power
+            gladiatorToPowerBonus[msg.sender] = 2; // 2% increase in the power
             founders++;
         }else if(founders < 200 && gladiatorToPowerBonus[msg.sender] == 0){
-            gladiatorToPowerBonus[msg.sender] = 1; // 5% increase in the power
+            gladiatorToPowerBonus[msg.sender] = 1; // 1% increase in the power
             founders++;
         }
 
-        if(queue.length == 0){
-            enter(msg.sender);
-        }else if(queue.length > gladiatorToQueuePosition[msg.sender]){
+        if(queue.length > gladiatorToQueuePosition[msg.sender]){
 
             if(queue[gladiatorToQueuePosition[msg.sender]] == msg.sender){
                 gladiatorToPower[msg.sender] += msg.value;
+                return false;
             }
-            else{
-            enter(msg.sender);
-            }
+            
         }
-        else{
-            enter(msg.sender);
-        }
+        
+        enter(msg.sender);
+        return true;    
+        
 
     }
 
@@ -66,36 +69,37 @@ contract Gladiethers
         gladiatorToPower[gladiator] += msg.value;
     }
 
-    function revertFromFailed(){ // When oraclize fails we can revert to the Arena and fight again
 
-        require(gladiatorToCooldown[msg.sender] == 9999999999999);
-        setCooldown(msg.sender, now + 1 days);
-        queue.push(msg.sender);
-        gladiatorToQueuePosition[msg.sender] = queue.length - 1;
+    function remove(address gladiator) private returns(bool){
+        
+        if(queue.length > gladiatorToQueuePosition[gladiator]){
 
-    }
-
-    function remove(address gladiator) private{
-        queue[gladiatorToQueuePosition[gladiator]] = queue[queue.length - 1];
-        gladiatorToQueuePosition[queue[queue.length - 1]] = gladiatorToQueuePosition[gladiator];
-        setCooldown(gladiator, 9999999999999); // indicative number to know when it is in battle
-        delete queue[queue.length - 1];
-        queue.length = queue.length - (1);
+            if(queue[gladiatorToQueuePosition[gladiator]] == gladiator){ // is on the line ?
+            
+                queue[gladiatorToQueuePosition[gladiator]] = queue[queue.length - 1];
+                gladiatorToQueuePosition[queue[queue.length - 1]] = gladiatorToQueuePosition[gladiator];
+                gladiatorToCooldown[gladiator] =  9999999999999; // indicative number to know when it is in battle
+                delete queue[queue.length - 1];
+                queue.length = queue.length - (1);
+                return true;
+                
+            }
+           
+        }
+        return false;
+        
+        
     }
 
     function removeOrc(address _gladiator) public OnlyOwnerAndContracts(){
          remove(_gladiator);
     }
 
-    function getCooldown(address gladiator) returns (uint){
-        return gladiatorToCooldown[gladiator];
-    }
-
-    function setCooldown(address gladiator, uint cooldown){
+    function setCooldown(address gladiator, uint cooldown) internal{
         gladiatorToCooldown[gladiator] = cooldown;
     }
 
-    function getQueueLenght() returns (uint){
+    function getQueueLenght() public view returns (uint){
         return queue.length;
     }
 
@@ -129,6 +133,7 @@ contract Gladiethers
             queue[gladiatorToQueuePosition[gladiator2]] = gladiator1;
             gladiatorToQueuePosition[gladiator1] = gladiatorToQueuePosition[gladiator2];
             gladiatorToPower[gladiator2] = 0;
+            gladiatorToCooldown[gladiator1] = now + 1 days; // reset atacker cooldown
 
             if(gladiatorToPower[gladiator1] > gladiatorToPower[kingGladiator] ){ // check if is the biggest guy in the arena
                 kingGladiator = gladiator1;
@@ -147,7 +152,7 @@ contract Gladiethers
 
         }
 
-        gladiatorToCooldown[gladiator1] = now + 1 days; // reset atacker cooldown
+        
         gladiatorToPower[kingGladiator] += SafeMath.div(devFee,4); // gives 1%      (4% dead gladiator / 4 )
         gladiatorToPower[m_Owner] += SafeMath.sub(devFee,SafeMath.div(devFee,4)); // 4total - 1king  = 3%
 
@@ -171,8 +176,8 @@ contract Gladiethers
             // set funds to 0
             gladiatorToPower[withdrawalAccount] = 0;
 
-            if (!m_Owner.send(SafeMath.sub(withdrawalAmount,partnerFee))) revert();
-            if (!m_Owner.send(partnerFee)) revert();
+            if (!m_Owner.send(SafeMath.sub(withdrawalAmount,partnerFee))) revert(); // send to owner
+            if (!m_Owner.send(partnerFee)) revert(); // send to partner
 
             return true;
         }else{
