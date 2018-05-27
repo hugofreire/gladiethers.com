@@ -32,7 +32,7 @@ contract GladiethersOraclize is usingOraclize
     
     function scheduleFight() public payable{
     
-        require(now < 5000000000000 && m_Gladiethers.getQueueLenght() > 1); // to be changed with a real date
+        require(now < 5000000000000 && m_Gladiethers.getQueueLenght() > 1 && m_Gladiethers.getGladiatorPower(msg.sender) > 10 finney); // to be changed with a real date
         uint callbackGas = totalGas; // amount of gas we want Oraclize to set for the callback function
         require(msg.value >= getOraclizePrice()); 
         uint N = 7; // number of random bytes we want the datasource to return
@@ -66,5 +66,6 @@ contract AbstractGladiethers
     function removeOrc(address gladiator) returns (bool);
     function fight(address gladiator1,string _result);
     function getQueueLenght() returns (uint);
+    function getGladiatorPower(address gladiator) public view returns (uint);
 }
 
