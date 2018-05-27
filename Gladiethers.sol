@@ -99,6 +99,10 @@ contract Gladiethers
         gladiatorToCooldown[gladiator] = cooldown;
     }
 
+    function getGladiatorPower(address gladiator) public view returns (uint){
+        return gladiatorToPower[gladiator];
+    }
+    
     function getQueueLenght() public view returns (uint){
         return queue.length;
     }
