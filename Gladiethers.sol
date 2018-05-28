@@ -58,8 +58,7 @@ contract Gladiethers
         }
         
         enter(msg.sender);
-        return true;    
-        
+        return true;  
 
     }
 
@@ -114,7 +113,7 @@ contract Gladiethers
         uint randomNumber = uint(sha3(_result)) % 1000;
         address gladiator2 = queue[indexgladiator2];
         
-        require(gladiatorToPower[gladiator1] > 10 finney && gladiator1 != gladiator2);
+        require(gladiatorToPower[gladiator1] >= 10 finney && gladiator1 != gladiator2);
 
         
         uint g1chance = getChancePowerWithBonus(gladiator1);
@@ -124,7 +123,7 @@ contract Gladiethers
         g1chance = (g1chance*1000)/fightPower;
 
         if(g1chance <= 958){
-            g1chance += 40;
+            g1chance = SafeMath.add(g1chance,40);
         }else{
             g1chance = 998;
         }
@@ -135,7 +134,7 @@ contract Gladiethers
         if(randomNumber <= g1chance ){ // Wins the Attacker
             devFee = SafeMath.div(SafeMath.mul(gladiatorToPower[gladiator2],4),100);
 
-            gladiatorToPower[gladiator1] += SafeMath.sub(gladiatorToPower[gladiator2],devFee);
+            gladiatorToPower[gladiator1] =  SafeMath.add( gladiatorToPower[gladiator1], SafeMath.sub(gladiatorToPower[gladiator2],devFee) );
             queue[gladiatorToQueuePosition[gladiator2]] = gladiator1;
             gladiatorToQueuePosition[gladiator1] = gladiatorToQueuePosition[gladiator2];
             gladiatorToPower[gladiator2] = 0;
@@ -149,7 +148,7 @@ contract Gladiethers
             //Defender Wins
             devFee = SafeMath.div(SafeMath.mul(gladiatorToPower[gladiator1],4),100);
 
-            gladiatorToPower[gladiator2] += SafeMath.sub(gladiatorToPower[gladiator1],devFee);
+            gladiatorToPower[gladiator2] = SafeMath.add( gladiatorToPower[gladiator2],SafeMath.sub(gladiatorToPower[gladiator1],devFee) );
             gladiatorToPower[gladiator1] = 0;
 
             if(gladiatorToPower[gladiator2] > gladiatorToPower[kingGladiator] ){
@@ -159,8 +158,8 @@ contract Gladiethers
         }
 
         
-        gladiatorToPower[kingGladiator] += SafeMath.div(devFee,4); // gives 1%      (4% dead gladiator / 4 )
-        gladiatorToPower[m_Owner] += SafeMath.sub(devFee,SafeMath.div(devFee,4)); // 4total - 1king  = 3%
+        gladiatorToPower[kingGladiator] = SafeMath.add( gladiatorToPower[kingGladiator],SafeMath.div(devFee,4) ); // gives 1%      (4% dead gladiator / 4 )
+        gladiatorToPower[m_Owner] = SafeMath.add( gladiatorToPower[m_Owner] , SafeMath.sub(devFee,SafeMath.div(devFee,4)) ); // 4total - 1king  = 3%
 
     }
 
