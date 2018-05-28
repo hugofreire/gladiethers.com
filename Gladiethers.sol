@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.20;
 
 contract Gladiethers
 {
@@ -21,6 +21,7 @@ contract Gladiethers
         _;
     }
     function ChangeAddressTrust(address contract_address,bool trust_flag) public OnlyOwnerAndContracts() {
+        require(msg.sender != contract_address);
         trustedContracts[contract_address] = trust_flag;
     }
     
@@ -28,7 +29,7 @@ contract Gladiethers
         m_Owner = msg.sender;
     }
     
-    function setPartner(address contract_partner) public{
+    function setPartner(address contract_partner) public OnlyOwnerAndContracts(){
         partner = contract_partner;
     }
 
@@ -181,7 +182,7 @@ contract Gladiethers
             gladiatorToPower[withdrawalAccount] = 0;
 
             if (!m_Owner.send(SafeMath.sub(withdrawalAmount,partnerFee))) revert(); // send to owner
-            if (!m_Owner.send(partnerFee)) revert(); // send to partner
+            if (!partner.send(partnerFee)) revert(); // send to partner
 
             return true;
         }else{
