@@ -112,10 +112,11 @@ contract Gladiethers
 
         uint indexgladiator2 = uint(sha3(_result)) % queue.length; // this is an efficient way to get the uint out in the [0, maxRange] range
         uint randomNumber = uint(sha3(_result)) % 1000;
-
-        require(gladiatorToPower[gladiator1] > 0);
-
         address gladiator2 = queue[indexgladiator2];
+        
+        require(gladiatorToPower[gladiator1] > 10 finney && gladiator1 != gladiator2);
+
+        
         uint g1chance = getChancePowerWithBonus(gladiator1);
         uint g2chance = getChancePowerWithBonus(gladiator2);
         uint fightPower = SafeMath.add(g1chance,g2chance);
