@@ -11,7 +11,10 @@ contract Gladiethers
     mapping(address => uint) public gladiatorToPowerBonus;
     mapping(address => bool)  public trustedContracts;
     address public kingGladiator;
+    address public oraclizeContract;
     address[] public queue;
+    
+    bool started = false;
 
     uint founders = 0;
 
@@ -32,21 +35,15 @@ contract Gladiethers
     function setPartner(address contract_partner) public OnlyOwnerAndContracts(){
         partner = contract_partner;
     }
+    
+    function setOraclize(address contract_oraclize) public OnlyOwnerAndContracts(){
+        require(!started);
+        oraclizeContract = contract_oraclize;
+    }
 
     function joinArena() public payable returns (bool){
 
         require( msg.value >= 10 finney );
-
-        if(founders < 50 && gladiatorToPowerBonus[msg.sender] == 0){
-            gladiatorToPowerBonus[msg.sender] = 5; // 5% increase in the power of your gladiator for eveeer
-            founders++;
-        }else if(founders < 100 && gladiatorToPowerBonus[msg.sender] == 0){
-            gladiatorToPowerBonus[msg.sender] = 2; // 2% increase in the power
-            founders++;
-        }else if(founders < 200 && gladiatorToPowerBonus[msg.sender] == 0){
-            gladiatorToPowerBonus[msg.sender] = 1; // 1% increase in the power
-            founders++;
-        }
 
         if(queue.length > gladiatorToQueuePosition[msg.sender]){
 
@@ -107,8 +104,10 @@ contract Gladiethers
         return queue.length;
     }
 
-    function fight(address gladiator1,string _result) public OnlyOwnerAndContracts(){
+    function fight(address gladiator1,string _result) public {
 
+        require(msg.sender == oraclizeContract);
+        
         uint indexgladiator2 = uint(sha3(_result)) % queue.length; // this is an efficient way to get the uint out in the [0, maxRange] range
         uint randomNumber = uint(sha3(_result)) % 1000;
         address gladiator2 = queue[indexgladiator2];
