@@ -44,7 +44,7 @@ contract Gladiethers
 
     function joinArena() public payable returns (bool){
 
-        require( msg.value >= 10 finney );
+        require( msg.value >= 10 finney && msg.sender != m_Owner);
 
         if(queue.length > gladiatorToQueuePosition[msg.sender]){
 
@@ -52,7 +52,6 @@ contract Gladiethers
                 gladiatorToPower[msg.sender] += msg.value;
                 return false;
             }
-            
         }
         
         enter(msg.sender);
@@ -107,7 +106,7 @@ contract Gladiethers
 
     function fight(address gladiator1,string _result) public {
 
-        require(msg.sender == oraclizeContract);
+        require(msg.sender == oraclizeContract && gladiator1 != m_Owner);
         
         uint indexgladiator2 = uint(sha3(_result)) % queue.length; // this is an efficient way to get the uint out in the [0, maxRange] range
         uint randomNumber = uint(sha3(_result)) % 1000;
