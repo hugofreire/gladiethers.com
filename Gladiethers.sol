@@ -8,7 +8,6 @@ contract Gladiethers
     mapping (address => uint) public gladiatorToPower; // gladiator power
     mapping (address => uint) public gladiatorToCooldown;
     mapping(address => uint) public gladiatorToQueuePosition;
-    mapping(address => uint) public gladiatorToPowerBonus;
     mapping(address => bool)  public trustedContracts;
     address public kingGladiator;
     address public oraclizeContract;
@@ -88,8 +87,9 @@ contract Gladiethers
         
     }
 
-    function removeOrc(address _gladiator) public OnlyOwnerAndContracts(){
-         remove(_gladiator);
+    function removeOrc(address _gladiator) public {
+        require(msg.sender == oraclizeContract);
+        remove(_gladiator);
     }
 
     function setCooldown(address gladiator, uint cooldown) internal{
@@ -115,8 +115,8 @@ contract Gladiethers
         require(gladiatorToPower[gladiator1] >= 10 finney && gladiator1 != gladiator2);
 
         
-        uint g1chance = getChancePowerWithBonus(gladiator1);
-        uint g2chance = getChancePowerWithBonus(gladiator2);
+        uint g1chance = gladiatorToPower[gladiator1];
+        uint g2chance =  gladiatorToPower[gladiator2];
         uint fightPower = SafeMath.add(g1chance,g2chance);
 
         g1chance = (g1chance*1000)/fightPower;
@@ -127,7 +127,7 @@ contract Gladiethers
             g1chance = 998;
         }
 
-        fightEvent( gladiator1, gladiator2,randomNumber,fightPower,getChancePowerWithBonus(gladiator1));
+        fightEvent( gladiator1, gladiator2,randomNumber,fightPower,gladiatorToPower[gladiator1]);
         uint devFee;
 
         if(randomNumber <= g1chance ){ // Wins the Attacker
@@ -160,10 +160,6 @@ contract Gladiethers
         gladiatorToPower[kingGladiator] = SafeMath.add( gladiatorToPower[kingGladiator],SafeMath.div(devFee,4) ); // gives 1%      (4% dead gladiator / 4 )
         gladiatorToPower[m_Owner] = SafeMath.add( gladiatorToPower[m_Owner] , SafeMath.sub(devFee,SafeMath.div(devFee,4)) ); // 4total - 1king  = 3%
 
-    }
-
-    function getChancePowerWithBonus(address gladiator) public view returns(uint power){
-        return SafeMath.add(gladiatorToPower[gladiator],SafeMath.div(SafeMath.mul(gladiatorToPower[gladiator],gladiatorToPowerBonus[gladiator]),100));
     }
 
 
