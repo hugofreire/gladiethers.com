@@ -9,7 +9,7 @@ contract Gladiethers
     mapping (address => uint) public gladiatorToCooldown;
     mapping(address => uint) public gladiatorToQueuePosition;
     mapping(address => bool)  public trustedContracts;
-    uint m_OwnerFees = 0;
+    uint public m_OwnerFees = 0;
     address public kingGladiator;
     address public oraclizeContract;
     address[] public queue;
