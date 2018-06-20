@@ -173,7 +173,8 @@ contract Gladiethers
     
                 gladiatorToPower[gladiator2] = SafeMath.add( gladiatorToPower[gladiator2],SafeMath.sub(gladiatorToPower[gladiator1],devFee) );
                 gladiatorToPower[gladiator1] = 0;
-    
+                gladiatorToCooldown[gladiator1] = 0;
+                
                 if(gladiatorToPower[gladiator2] > gladiatorToPower[kingGladiator] ){
                     kingGladiator = gladiator2;
                 }
