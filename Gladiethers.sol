@@ -43,7 +43,7 @@ contract Gladiethers
 
     function joinArena() public payable returns (bool){
 
-        require( msg.value >= 10 finney );
+        require( msg.value >= 10 finney && getGladiatorCooldown(msg.sender) != 9999999999999);
 
         if(queue.length > gladiatorToQueuePosition[msg.sender]){
 
@@ -103,6 +103,11 @@ contract Gladiethers
     function getQueueLenght() public view returns (uint){
         return queue.length;
     }
+    
+    function getGladiatorCooldown(address gladiator) public view returns (uint){
+        return gladiatorToCooldown[gladiator];
+    }
+    
 
     function fight(address gladiator1,string _result) public {
 
